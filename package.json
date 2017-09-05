@@ -1,0 +1,25 @@
+{
+  "name": "trello-status",
+  "version": "0.1.0",
+  "description": "A NodeJS server to report Trello card status as a small text or image resource.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humanstuff/trello-status.git"
+  },
+  "keywords": [
+    "Trello"
+  ],
+  "author": "HumanStuff, LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/humanstuff/trello-status/issues"
+  },
+  "homepage": "https://github.com/humanstuff/trello-status#readme",
+  "dependencies": {
+    "express": "^4.15.4"
+  }
+}
