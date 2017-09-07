@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const PORT = 8080;
+const PORT = 3000;
 const HOST = '0.0.0.0';
 const app = express();
 const trello = require("./trello-api");
@@ -15,12 +15,11 @@ function getCardStatusAsText(req, res) {
   .then(card => {
     res.writeHead(200, { "content-type": "text/plain"});
     res.write(card.listName + "\n");
-    card.labels.forEach(label => {
-      res.write(label.name + "\n");
-    });
+    res.write(card.labels.map(label => label.name).join(","));
     res.end();
   })
   .catch(err => {
+    console.log(err);
     res.writeHead(500, { "content-type": "text/plain"});
     res.end("Server Error");
   });
