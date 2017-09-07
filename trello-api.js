@@ -1,15 +1,20 @@
 const key = process.env.TRELLO_API_KEY;
 const token = process.env.TRELLO_API_TOKEN;
-const https = require("https");
+const https = require('https');
+const qs = require('querystring');
 
 function getUrl(path, query) {
-  query = "?" + (query || "");
-  return "https://api.trello.com/1" + path + query + "&key=" + key + "&token=" + token;
+  query = query || {};
+  query.key = key;
+  query.token = token;
+  query = qs.stringify(query);
+  
+  return 'https://api.trello.com/1' + path + '?' + query;
 }
 
 function getObject(objectUrl) {
   return new Promise(function (resolve, reject) {
-    if (!key || !token) return reject(new Error("Env variables missing: TRELLO_API_KEY, TRELLO_API_TOKEN"));
+    if (!key || !token) return reject(new Error('Env variables missing: TRELLO_API_KEY, TRELLO_API_TOKEN'));
     
     var req = https.get(objectUrl, function (res) {
       var data = [];
@@ -20,7 +25,7 @@ function getObject(objectUrl) {
       
       res.on('end', function () {
         try {
-          var result = JSON.parse(data.join(""));
+          var result = JSON.parse(data.join(''));
           resolve(result);
         } catch (e) {
           reject(e);
@@ -37,14 +42,24 @@ function getObject(objectUrl) {
 }
 
 function getListByCardId(cardId, fields) {
-  var query = fields ? "fields=" + fields.join(",") : null;
-  return getObject(getUrl("/cards/" + cardId + "/list", query));
+  var query = {};
+  
+  if (fields) {
+    query.fields = fields.join(',');
+  }
+  
+  return getObject(getUrl('/cards/' + cardId + '/list', query));
 }
 
 function getCardById(cardId, fields) {
-  var query = fields ? "fields=" + fields.join(",") : null;
-  return getObject(getUrl("/cards/" + cardId, query)).then(card => {
-    return getListByCardId(cardId, ["name"]).then(list => {
+  var query = {};
+  
+  if (fields) {
+    query.fields = fields.join(',');
+  }
+  
+  return getObject(getUrl('/cards/' + cardId, query)).then(card => {
+    return getListByCardId(cardId, ['name']).then(list => {
       card.listName = list.name;
       return card;
     });
