@@ -8,11 +8,13 @@ const trello = require('./trello-api');
 const imageTemplate = '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" height="50px" width="150px" viewBox="0 0 150 29.8838"><title>Item Status</title><text transform="translate(14.8265 12.0209)" style="font-size:14px;font-family:Helvetica, Helvetica">{{primary-status}}</text><text transform="translate(14.8265 24.1124)" style="font-size:12px;font-family:Helvetica, Helvetica">{{secondary-status}}</text></svg>';
 
 function getCardStatus(cardId) {
-  return trello.getCardById(cardId).then(card => {
-    var status = {};
-    status.primary = card.listName;
-    status.secondary = card.labels.map(label => label.name).join(',');
-    return status;
+  return trello.getList({ card:cardId }, { fields: ['name' ] }).then(list => {
+    return trello.getCard({ card: cardId }, { fields: [ 'labels' ] }).then(card => {
+      return {
+        primary: list.name,
+        secondary: card.labels.map(label => label.name).join(',')
+      };
+    });
   });
 }
 

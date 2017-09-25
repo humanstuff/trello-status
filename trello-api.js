@@ -1,72 +1,129 @@
 const key = process.env.TRELLO_API_KEY;
 const token = process.env.TRELLO_API_TOKEN;
+const throttle = process.env.TRELLO_THROTTLE || 100;
 const https = require('https');
 const qs = require('querystring');
+const url = require('url');
 
-function getUrl(path, query) {
-  query = query || {};
-  query.key = key;
-  query.token = token;
-  query = qs.stringify(query);
+function getObject(path, query, options) {
+  var request = {
+    protocol: 'https:',
+    host: 'api.trello.com',
+    pathname: '/1' + path,
+    search: '?' + qs.stringify(Object.assign({}, { key, token, fields: ['all'] }, query))
+  };
   
-  return 'https://api.trello.com/1' + path + '?' + query;
-}
-
-function getObject(objectUrl) {
   return new Promise(function (resolve, reject) {
     if (!key || !token) return reject(new Error('Env variables missing: TRELLO_API_KEY, TRELLO_API_TOKEN'));
     
-    var req = https.get(objectUrl, function (res) {
-      var data = [];
+    setTimeout(function () {
+      var requestUri = url.format(request);
       
-      res.on('data', function (d) {
-        data.push(d);
+      var req = https.get(requestUri, function (res) {
+        var data = [];
+        
+        res.on('data', function (d) {
+          data.push(d);
+        });
+        
+        res.on('end', function () {
+          try {
+            var result = JSON.parse(data.join(''));
+            resolve(result);
+          } catch (e) {
+            if (data) console.log(data.join(''));
+            reject(e);
+          }
+        });
       });
-      
-      res.on('end', function () {
-        try {
-          var result = JSON.parse(data.join(''));
-          resolve(result);
-        } catch (e) {
-          reject(e);
-        }
+
+      req.on('error', function (e) {
+        reject(e);
       });
-    });
 
-    req.on('error', function (e) {
-      reject(e);
-    });
-
-    req.end();
+      req.end();
+    }, throttle);
   });
 }
 
-function getListByCardId(cardId, fields) {
-  var query = {};
+function getBoard(id, query) {
+  var path;
   
-  if (fields) {
-    query.fields = fields.join(',');
+  if (id.board) {
+    path = `/boards/${id.board}`;
   }
   
-  return getObject(getUrl('/cards/' + cardId + '/list', query));
+  return getObject(path, query);
 }
 
-function getCardById(cardId, fields) {
-  var query = {};
+function getLists(id, query, filter) {
+  var path;
   
-  if (fields) {
-    query.fields = fields.join(',');
+  if (id.board) {
+    path = `/boards/${id.board}/lists`;
   }
   
-  return getObject(getUrl('/cards/' + cardId, query)).then(card => {
-    return getListByCardId(cardId, ['name']).then(list => {
-      card.listName = list.name;
-      return card;
-    });
-  });
+  if (filter) {
+    path = `${path}/${filter}`;
+  }
+  
+  return getObject(path, query);
 }
 
-exports.getUrl = getUrl;
+function getList(id, query) {
+  var path;
+  
+  if (id.list) {
+    path = `/lists/${id.list}`;
+  }
+  else if (id.card) {
+    path = `/cards/${id.card}/list`;
+  }
+  
+  return getObject(path, query);
+}
+
+function getCards(id, query, filter) {
+  var path;
+  
+  if (id.list) {
+    path = `/lists/${id.list}/cards`;
+  }
+  else if (id.board) {
+    path = `/board/${id.board}/cards`;
+  }
+  
+  if (filter) {
+    path = `${path}/${filter}`;
+  }
+  
+  return getObject(path, query);
+}
+
+function getCard(id, query) {
+  var path;
+  
+  if (id.card) {
+    path = `/cards/${id.card}`;
+  }
+  
+  return getObject(path, query);
+}
+
+function getMembers(id, query) {
+  var path;
+  
+  if (id.card) {
+    path = `/cards/${id.card}/members`;
+  }
+  
+  return getObject(path, query);
+}
+
 exports.getObject = getObject;
-exports.getCardById = getCardById;
-exports.getListByCardId = getListByCardId;
+exports.getBoard = getBoard;
+exports.getLists = getLists;
+exports.getList = getList;
+exports.getCards = getCards;
+exports.getCard = getCard;
+exports.getMembers = getMembers;
