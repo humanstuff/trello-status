@@ -41,7 +41,7 @@ function getCardStatusAsImage(req, res) {
           text-anchor: middle;
         }
       </style>
-      <text id="statusText" x="0" y="0" fill="${color}" transform="translate(${width/2} ${height/2})">
+      <text id="statusText" x="0" y="0" fill="${color}" transform="translate(${width/2} ${(height + 16.8)/2})">
         <![CDATA[
           ${text}
         ]]>
