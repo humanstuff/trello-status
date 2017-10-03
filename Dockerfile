@@ -1,4 +1,4 @@
-FROM node:boron
+FROM node:boron-alpine
 WORKDIR /usr/src/app
 COPY package.json .
 RUN npm install
