@@ -22,10 +22,10 @@ function getCardStatusAsImage(req, res) {
   getCardStatus(req.params.cardId).then(status => {
     res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-cache, no-store' });
     
-    var height = +req.params.h || 48;
-    var width = +req.params.w || 192;
-    var backgroundColor = req.params.bg || "#003b64";
-    var color = req.params.fg || "#ffffff";
+    var height = +req.query.h || 48;
+    var width = +req.query.w || 192;
+    var backgroundColor = req.query.bg || "#003b64";
+    var color = req.query.fg || "#ffffff";
     var text = status.primary;
     
     var imageContent = `<svg xmlns="http://www.w3.org/2000/svg" height="${height}" width="${width}">
@@ -41,7 +41,7 @@ function getCardStatusAsImage(req, res) {
           text-anchor: middle;
         }
       </style>
-      <text id="statusText" x="0" y="0" fill="${color}" transform="translate(${width/2} ${(height + 16.8)/2})">
+      <text id="statusText" x="0" y="0" fill="${color}" transform="translate(${width/2} ${(height + 8.4)/2})">
         <![CDATA[
           ${text}
         ]]>
